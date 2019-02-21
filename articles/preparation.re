@@ -1,4 +1,4 @@
-={preparation} 開発の準備
+={preparation} 拡張機能開発の準備
 
 それではこれから VSCode 拡張機能の開発環境を整えていきます。
 また、 @<code>{Hello World!} の出力まで確認してみます。
@@ -339,8 +339,7 @@ export function deactivate() {}
   ],
   "main": "./out/extension.js",
   "contributes": {
-    "commands": [
-        {
+    "commands": [{
       "command": "extension.helloWorld",
       "title": "Hello World"
       }
@@ -359,9 +358,10 @@ export function deactivate() {}
 
 ===={when_activate} どんなイベントで activate メソッドを呼ぶか
 
-@<code>{"activationEvents"} で定義します。指定されたアクションが実行されたとき、
-エントリポイント（ @<code>{./out/extension.js} ）の @<code>{activate} がコールされます。
+@<code>{"activationEvents"} で定義します。
 
+指定されたアクションが実行されたとき、
+エントリポイント（ @<code>{./out/extension.js} ）の @<code>{activate} がコールされます。
 Activation Events には、主に次のような種類があります。
 
 //table[events_table][Activation Events]{
@@ -386,7 +386,6 @@ onWebviewPanel	指定のViewTypeのWebViewを復元（展開？）するとき
 ==== コマンド実行時の処理の読み込み
 
 @<code>{registerCommand} の第二引数で実装します。
-
 第二引数は @<code>{Hello World} コマンドを実行した際の処理をコールバックで実装します。
 
 @<code>{registerCommand} は @<code>{disposable} なオブジェクトを返しますが、
@@ -408,13 +407,13 @@ onWebviewPanel	指定のViewTypeのWebViewを復元（展開？）するとき
 拡張機能開発の準備から、最も簡単な拡張機能の実行までを駆け足で確認しました。
 いかがでしたでしょうか。
 
-複雑な初期設定は全て Yeoman がやってくれるので、 @<code>{yo code} でひな形を作って @<code>{F5} で実行するだけでした。
-開発するにあたってあるあるなミスとしては、
+複雑な初期設定は全て Yeoman がやってくれるので、 @<code>{"yo code"} でひな形を作って @<code>{F5} で実行するだけでした。
+開発するにあたってあるあるなミスとしては、次のようなものがあると思います。
 
  1. @<code>{"contributes.commands"} に追加し忘れる
  2. @<code>{"activationEvents"} に追加し忘れる
  3. コマンド ID を打ち間違える（Intellisense で自動補完したい！！）
  4. @<code>{registerCommand} を忘れる
 
-こんなところですかね。 ID 打ち間違えに関しては npm モジュールがありそうな気もしなくもないです。
+ID 打ち間違えに関しては npm モジュールがありそうな気もしなくもないです。
 コマンド主体の拡張機能については @<chap>{dev_command} でも解説しているので、そちらもご覧ください。
