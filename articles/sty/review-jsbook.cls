@@ -229,7 +229,7 @@
 \newif\ifrecls@serialpage \recls@serialpagefalse
 \DeclareOptionX{cover}[\@empty]{\gdef\recls@forcecover{#1}}
 \DeclareOptionX{startpage}[1]{\gdef\recls@startpage{\numexpr#1}}
-\DeclareOptionX{serial_pagination}[false]{\csname recls@serialpage#1\endcsname}
+\DeclareOptionX{serial_pagination}[true]{\csname recls@serialpage#1\endcsname}
 
 \PassOptionsToClass{dvipdfmx,nomag}{jsbook}
 \DeclareOptionX*{\PassOptionsToClass{\CurrentOption}{jsbook}}%
@@ -420,13 +420,13 @@
 }
 
 %% 空ページ
-\newcommand\oneblankpage{\clearpage\thispagestyle{empty}%
+\newcommand\oneblankpage{\clearpage\thispagestyle{plainhead}%
   \hbox{}\newpage\if@twocolumn\hbox{}\newpage\fi}
 
 %% 横書き向けの、奇数ページまでの改丁(\cleardoublepage)・偶数ページまでの改丁(\clearoddpage)
 \let\cleardoublepage@right\cleardoublepage
 \def\cleardoublepage@left{\clearpage\if@twoside\ifodd\c@page
-  \hbox{}\thispagestyle{empty}\newpage\if@twocolumn\hbox{}\newpage\fi\fi\fi}
+  \hbox{}\thispagestyle{plainhead}\newpage\if@twocolumn\hbox{}\newpage\fi\fi\fi}
 \let\clearoddpage\cleardoublepage@left
 
 %% coverオプションによる表紙判定の上書き

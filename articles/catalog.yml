@@ -2,6 +2,14 @@ PREDEF:
   - preface.re
 
 CHAPS:
-  - how_to_build.re
+  - feature_vscode.re
+  - whats_extension.re
+  - preparation.re
+  - dev_command.re
+  - dev_highlight.re
+
+APPENDIX:
+  - through_path.re
 
 POSTDEF:
+  - contributors.re
