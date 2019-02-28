@@ -1,7 +1,7 @@
 ={preparation} 拡張機能開発の準備
 
-それではこれから VSCode 拡張機能の開発環境を整えていきます。
-また、 @<code>{Hello World!} の出力まで確認してみます。
+この章では VSCode 拡張機能の開発環境を整えていきます。
+また、 @<code>{"Hello World!"} という名前の拡張機能を作り、メッセージの出力まで確認してみます。
 
 開発に必要なツール等は次のとおりです。
 
@@ -273,8 +273,11 @@ export function deactivate() {}
 すると、「HelloWorld」拡張機能が有効になった状態で新しいウィンドウが立ち上がります。
 
 では、新しいウィンドウで @<code>{Ctrl + Shift + P（または、表示 → コマンドパレット）} でコマンドパレットを開き、
-">Hello World" と打ち込んでみましょう。候補に @<code>{Hello World} が表示されると思うので、
-そちらをクリックします。
+"Hello World" と打ち込んでみましょう。候補に @<code>{Hello World} が表示されると思うので、
+そちらをクリックします（ @<img>{cmd_hello} ）。
+
+//image[cmd_hello][Hello World コマンド][scale=1.0]{
+//}
 
 次のようなメッセージが画面右下に表示されるはずです（ @<img>{message_hello} ）。
 
@@ -313,7 +316,26 @@ Congratulations, your extension "helloworld" is now active!
  - extension.ts showInformationMessage メソッド
 //}
 
-@<code>{extension.ts} 及び @<code>{package.json} の記述を確認します。
+@<code>{package.json} 及び @<code>{extension.ts} の記述を確認します。
+
+//listnum[def_package][package.json]{
+{
+  ...
+  "activationEvents": [
+    "onCommand:extension.helloWorld"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "extension.helloWorld",
+        "title": "Hello World"
+      }
+    ]
+  }
+  ...
+}
+//}
 
 //listnum[def_ext2][extension.ts（再掲）]{
 import * as vscode from 'vscode';
@@ -331,34 +353,16 @@ export function activate(context: vscode.ExtensionContext) {
 export function deactivate() {}
 //}
 
-//listnum[def_package][package.json]{
-{
-  ...
-  "activationEvents": [
-    "onCommand:extension.helloWorld"
-  ],
-  "main": "./out/extension.js",
-  "contributes": {
-    "commands": [{
-      "command": "extension.helloWorld",
-      "title": "Hello World"
-      }
-    ]
-  }
-  ...
-}
-//}
-
 ==== コマンドの読み込み
 
-@<code>{"contributes.commands"} で定義します。
+@<code>{package.json} の @<code>{"contributes.commands"} で定義します。
 
 @<code>{"command"} はコマンドごとに一意に決められた ID 、
 @<code>{"title"} はコマンドパレットに表示される際のコマンド名になります。
 
 ===={when_activate} どんなイベントで activate メソッドを呼ぶか
 
-@<code>{"activationEvents"} で定義します。
+@<code>{package.json} の @<code>{"activationEvents"} で定義します。
 
 指定されたアクションが実行されたとき、
 エントリポイント（ @<code>{./out/extension.js} ）の @<code>{activate} がコールされます。
@@ -378,7 +382,8 @@ onWebviewPanel	指定のViewTypeのWebViewを復元（展開？）するとき
 "*"	VSCodeが起動したとき
 //}
 
-さまざまなタイミングで @<code>{activate} をコールできるようになっているので、目的に応じて設定してみてください。 @<fn>{webviewpanel} @<fn>{activation_events}
+さまざまなタイミングで @<code>{activate} をコールできるようになっているので、
+目的に応じて設定してみてください。 @<fn>{webviewpanel} @<fn>{activation_events}
 
 //footnote[webviewpanel][Webview API https://code.visualstudio.com/api/extension-guides/webview]
 //footnote[activation_events][VSCode API Activation Events https://code.visualstudio.com/api/references/activation-events]
@@ -405,15 +410,16 @@ onWebviewPanel	指定のViewTypeのWebViewを復元（展開？）するとき
 == まとめ
 
 拡張機能開発の準備から、最も簡単な拡張機能の実行までを駆け足で確認しました。
-いかがでしたでしょうか。
+環境構築がメインなので、あまり凝った実装はありませんでしたが、いかがでしたでしょうか。
 
-複雑な初期設定は全て Yeoman がやってくれるので、 @<code>{"yo code"} でひな形を作って @<code>{F5} で実行するだけでした。
+複雑な初期設定は全て Yeoman がやってくれるので、 @<code>{yo　code} でひな形を作って @<code>{F5} で実行するだけでした。
 開発するにあたってあるあるなミスとしては、次のようなものがあると思います。
 
  1. @<code>{"contributes.commands"} に追加し忘れる
  2. @<code>{"activationEvents"} に追加し忘れる
- 3. コマンド ID を打ち間違える（Intellisense で自動補完したい！！）
+ 3. コマンド ID を打ち間違える（Intellisense で自動補完したい）
  4. @<code>{registerCommand} を忘れる
 
 ID 打ち間違えに関しては npm モジュールがありそうな気もしなくもないです。
-コマンド主体の拡張機能については @<chap>{dev_command} でも解説しているので、そちらもご覧ください。
+コマンド主体の拡張機能については @<chap>{dev_command} 、
+テキストハイライトの拡張機能については @<chap>{dev_highlight} で解説しているので、そちらもご覧ください。
