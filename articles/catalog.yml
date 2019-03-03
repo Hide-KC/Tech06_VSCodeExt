@@ -10,7 +10,7 @@ CHAPS:
   - publish.re
 
 APPENDIX:
-  - through_path.re
+  - hatena_oauth.re
 
 POSTDEF:
   - contributors.re

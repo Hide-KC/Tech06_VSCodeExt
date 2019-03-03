@@ -229,7 +229,7 @@
 \newif\ifrecls@serialpage \recls@serialpagefalse
 \DeclareOptionX{cover}[\@empty]{\gdef\recls@forcecover{#1}}
 \DeclareOptionX{startpage}[1]{\gdef\recls@startpage{\numexpr#1}}
-\DeclareOptionX{serial_pagination}[false]{\csname recls@serialpage#1\endcsname}
+\DeclareOptionX{serial_pagination}[true]{\csname recls@serialpage#1\endcsname}
 
 \PassOptionsToClass{dvipdfmx,nomag}{jsbook}
 \DeclareOptionX*{\PassOptionsToClass{\CurrentOption}{jsbook}}%
@@ -331,7 +331,7 @@
 \ifx\recls@number@of@lines\@empty\else
   \setlength\textheight{\recls@number@of@lines\Cvs}
   \addtolength\textheight{-\Cvs}\addtolength\textheight{\Cwd}
-  \addtolength\textheight{\dimexpr\topskip-\Cht}%%adjustment for jsbook.cls's \topskip
+  \addtolength\textheight{1H}
 \fi
 
 %% ノド、小口
@@ -420,33 +420,14 @@
 }
 
 %% 空ページ
-\newcommand\oneblankpage{\clearpage\thispagestyle{empty}%
+\newcommand\oneblankpage{\clearpage\thispagestyle{plainhead}%
   \hbox{}\newpage\if@twocolumn\hbox{}\newpage\fi}
 
 %% 横書き向けの、奇数ページまでの改丁(\cleardoublepage)・偶数ページまでの改丁(\clearoddpage)
 \let\cleardoublepage@right\cleardoublepage
 \def\cleardoublepage@left{\clearpage\if@twoside\ifodd\c@page
-  \hbox{}\thispagestyle{empty}\newpage\if@twocolumn\hbox{}\newpage\fi\fi\fi}
+  \hbox{}\thispagestyle{plainhead}\newpage\if@twocolumn\hbox{}\newpage\fi\fi\fi}
 \let\clearoddpage\cleardoublepage@left
-
-%% 行のサンプル。\makelines{行数} で「■□■□…」からなる行を指定行数配置する
-\def\makelines#1{%
-  \@tempcnta\z@\relax
-  \def\@makeline@f@size{\f@size}%
-  \@whilenum\@tempcnta<#1\do{%
-    \advance\@tempcnta\@ne\relax
-    \noindent\rlap{\the\@tempcnta}\nobreak
-    \makelines@neline\par}%
-}
-\def\makelines@unit@#10#2\relax{%
-  \ifx!#2!\relax □\else\relax ■\fi}%
-\newcounter{makelines@unit}
-\def\makelines@neline{%
-  \c@makelines@unit\@ne
-  \@whilenum\c@makelines@unit<\dimexpr(\textwidth + \Cwd)/\Cwd\do{%
-    \expandafter\makelines@unit@\the\c@makelines@unit0\relax
-  \advance\c@makelines@unit\@ne}%
-}
 
 %% coverオプションによる表紙判定の上書き
 \def\recls@tmp{true}\ifx\recls@forcecover\recls@tmp

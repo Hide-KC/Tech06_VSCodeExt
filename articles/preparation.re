@@ -292,8 +292,12 @@ Congratulations, your extension "helloworld" is now active!
 //}
 
 これで自作した拡張機能の動作確認ができました。
-解説は省略しますが、 @<code>{showInformationMessage} の引数を変えることで
-表示されるメッセージが変わります。次に進む前に少しだけ試してみてください。
+
+解説は省略しますが、 @<code>{showInformationMessage} を @<code>{showErrorMessage} に
+変えることで、エラーメッセージが表示されるようになります。次に進む前に少しだけ試してみてください。
+
+//image[message_error][エラーメッセージ][scale=1.0]{
+//}
 
 === 中で行われていること
 
