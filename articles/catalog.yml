@@ -3,7 +3,6 @@ PREDEF:
 
 CHAPS:
   - feature_vscode.re
-  - whats_extension.re
   - preparation.re
   - dev_command.re
   - dev_highlight.re

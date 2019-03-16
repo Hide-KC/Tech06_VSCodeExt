@@ -3,11 +3,19 @@
 この章では、ごく簡単なコマンドを搭載した拡張機能を開発してみます。
 適宜外部の Node モジュールをインストールして開発を行っていきます。
 
+== VSCode のコマンドについて
+
+VSCode にはコマンドパレットという機能があり、VSCode のほぼすべての機能が
+このコマンドパレットを通じて使用することができます。
+たとえば、コマンドパレットに @<code>{New File} と打ち込むと
+新しいファイルを生成するためのコマンドが表示されます。
+
+
 == ひな形の生成
 
 拡張機能を作るにあたり、あらかじめひな形を生成しておきましょう。
 @<chap>{preparation} を参考に生成してみてください。
-拡張機能の名称は「GenerateFiles」としてみます。
+拡張機能の名称は「GenerateFiles」とします。
 
 //cmd{
 $ yo code
@@ -133,7 +141,7 @@ VSCode ではマルチルートワークスペース @<fn>{multirootworkspace} �
 配列として取得します。もしファイルを開いているだけの場合や、新規ウィンドウを開いただけの場合は
 @<code>{undefined} が返ります。
 
-今回は開いているフォルダは一つとし、 @<code>{workspaces[0].uri.fsPath} でカレントフォルダパスを取得しました。 @<fn>{for_mac}
+今回は開いているフォルダはひとつとし、 @<code>{workspaces[0].uri.fsPath} でカレントフォルダパスを取得しました。 @<fn>{for_mac}
 
 //listnum[workspaces][workspaceFolders]{
 const workspaces = vscode.workspace.workspaceFolders;
@@ -169,7 +177,7 @@ const current = workspaces[0].uri.fsPath;
 
 次はテキストエディタっぽく、インデントを半角４つから２つに変換する拡張機能を作ります。
 
- 1. 現在展開しているエディタ（画面）を取得する
+ 1. 現在アクティブになっているエディタ（画面）を取得する
  2. 全行をスキャンし、インデントを逐次 @<code>{replace} する
 
 上記のような手順で変換を行います。
@@ -194,7 +202,8 @@ const current = workspaces[0].uri.fsPath;
 
 ==== Activation Events の登録
 
-@<hd>{gf} と同様に、コマンドを叩くことで拡張機能が起動するようにします。
+コマンドを叩くことで拡張機能が起動するように、
+Activation Events にコマンドを登録します。
 
 //list[indent_activationevents][Activation Events の定義 - package.json]{
 {
@@ -207,7 +216,7 @@ const current = workspaces[0].uri.fsPath;
 ==== activate の実装
 
 @<code>{activate} の実装です。
-@<hd>{gf} と違うところは、コマンドの実行をアクティブなエディタ単位にするため、
+@<hd>{gf} と大きく違うところは、コマンドの実行をアクティブなエディタ単位にするため、
 @<code>{registerTextEditorCommand} メソッドを使用しているところです。
 
 //listnum[imp_indent][activate メソッドの実装 - extension.ts]{
@@ -224,7 +233,7 @@ export function activate(context: vscode.ExtensionContext) {
       //１行を文字列で取得
       const line = document.lineAt(lineNum).text;
       edit.replace(
-        //n行目の行頭から行末を範囲指定
+        //lineNum行目の行頭(0)から行末(line.length)を範囲指定
         new vscode.Range(lineNum, 0, lineNum, line.length),
         convert4To2(line)
       );
@@ -250,7 +259,7 @@ function convert4To2(line: string): string {
 ==== デバッグ実行
 
 @<code>{F5} でデバッグを開始します。
-適当な（半角スペース4つでインデントされた）ファイルを開いてください。
+半角スペース4つでインデントされたテキストファイルを開いてください。
 コマンドパレットを開き（ @<code>{Ctrl+Shift+P} ）、 @<code>{Indent 4 to 2} コマンドを実行します。
 
 //image[4to2][インデント変換前後][scale=1.0]{
@@ -277,7 +286,7 @@ OAuth 認証なども通すことができます（ @<chap>{hatena_oauth} 参照
 ====[column] コマンドを複数実装する場合
 
 実装するコマンドが複数になった場合、 @<code>{Disposable} オブジェクトひとつひとつを
-@<code>{subscriptions} に追加するのはめんどうです。
+@<code>{subscriptions} に追加するのは少し面倒です。
 
 そこで @<code>{Disposable} の配列を作り、
 @<code>{subscriptions.concat} でまとめて追加（結合）してみます。
