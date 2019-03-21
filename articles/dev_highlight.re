@@ -16,69 +16,136 @@
 
 //footnote[syntax_highlight][VSCode Syntax Highlight Guide https://code.visualstudio.com/api/language-extensions/syntax-highlight-guide]
 
-== 構文定義
+== ハイライトはどのように行われるか
 
-シンタックスハイライトでは、ソースコードやテキストの色付けのために
-対象となる文章をトークン（変数名や予約語、演算子などの最小構成単位）に分解することが必要となります。
-このとき、構文定義ファイル（ @<code>{tmLanguage.json} ）により、
-ファイルの中身が @<b>{スコープ} という単位で区切られます。
+開発の前段階として、そもそもハイライトはどのように行われるのかを考えます。
+@<list>{sample_js}を記述した JavaScript ファイル（ @<code>{sample.js} ）を用意してください。
+このコードを例に説明を行います。
 
-VSCode ではトークンへの分解に TextMate 文法（TextMate grammers）@<fn>{textmate_lessons} を使用しており、
-対象とする言語の指定やハイライトの規則等もこの TextMate 文法にしたがって記述していきます。
-
-//footnote[textmate_lessons][TextMate は MacOS 用のテキストエディタとのこと。Win 民なので馴染み薄…… Writing a TextMate Grammar https://www.apeth.com/nonblog/stories/textmatebundle.html]
-
-=={scope} スコープ
-
-構文定義により、ファイルの中身がスコープという単位に区切られます。
-TextMate において、スコープは次のように説明されています。 @<fn>{scope_selectors}
-
-//quote{
-一般的に、一つのドキュメントはたくさんの要素からなります。
-散文のドキュメントであれば、見出し、パラグラフ、箇条書きのリスト、強調テキストがあります。
-一方、ソースコードは文字列、コメント、キーワード、保存タイプなどがあります。
-@<br>{}
-
-TexMateには、ランゲージグラマーがこの要素とマッチして、それぞれに名前を割り当てます。
-この名前はドットによって区別され、それぞれに追加されたものがマッチした要素の種類に特化します。
-例えば、C の二重引用符文字列は @<code>{string.quoted.double.c} がスコープ名として付与されます。
-@<br>{}
-
-最もシンプルな形のスコープセレクタはマッチする要素名です。
-しかし、実際の要素名の接頭辞のみを指定する必要があるだけです。
-よって、スコープセレクタとして、 @<code>{string} と指定すると、すべての引用の文字列にマッチします。
-同じように、 @<code>{string.quoted} と指定すると、一重引用符文字列にも二重引用符文字列にも三重引用符文字列にもマッチします。
+//list[sample_js][変数宣言 - JavaScript]{
+var foo = 1;
 //}
 
-長いですね。 @<hd>{eg_highlight} で実際の使用方法について記載したので、そちらもご覧ください。
-#@# たとえば、コメントにハイライトを付ける場合、言語によって
-#@# ダブルスラッシュ（ @<code>{//} ）、ブロック（ @<code>{/*~*/} ）など、複数の記述の仕方があると思います。
-#@# それらを抽象化した @<code>{comment} を定義し、
-#@# その下に @<code>{comment.line.double-slash} や @<code>{comment.block} などの
-#@# 子要素を割り当てることで階層構造を作り、ハイライトする範囲を明確に示すことができます。
-@<table>{scope_naming} のようなスコープには、VSCode のカラーテーマで色が割り当てられているため、
-基本的にこれらのスコープを使用して構文定義を構築していきます。 @<fn>{scope_naming}
+==={token} トークンへの分解
 
-//table[scope_naming][既定のスコープ]{
-要素名	スコープ対象
+ハイライトを行う場合、コードをひとつひとつの語句に区切った@<b>{トークン}に分解することが必要です。
+今回は@<list>{sample_js}を次のようなトークンに分解しましょう。
+
+//list[to_tokens][トークンへの分解]{
+  var     foo     =      1      ;
+  ^^^     ^^^     ^      ^      ^
+変数宣言  変数名  演算子  定数  行末文字
+//}
+
+もちろんこれらの語句の間のスペースもトークンとして扱えますが、今回は無視します。 @<fn>{space_hl}
+さてこれらの各トークンに色を付けるわけですが、VSCode が色を付けるために
+@<b>{スコープ}という目印のようなものを割り当てていきます。
+
+//footnote[space_hl][行末のスペースをハイライトする拡張機能とかもありますね]
+
+==={scope} スコープの割り当て
+
+スコープは、VSCode がトークンに色を付けるときに目印とする属性のようなものです。
+@<code>{sample.js}にはすでに JavaScript ファイルとしてスコープが割り当てられているので、
+@<b>{Inspect TM Scope} コマンドによりスコープを確認してみましょう。
+
+@<code>{Ctrl+Shift+P} でコマンドパレットを開き、 @<code>{Inspect TM Scope} と打ち込みます。
+コマンドが見つかったら選択し、 @<code>{var} のところにカーソルを合わせると次のようなホバーウィンドウが表示されます。
+
+//image[inspect_tm_scope][Inspect TM Scope][scale=0.72]{
+//}
+
+上から順に次のような情報が記載されています。
+
+ 1. 検査中のトークン
+ 2. トークンのメタデータ
+ 3. トークンに適用されているカラーテーマのルール
+ 4. 割り当てられたスコープのリスト。上に行くほどより具体的なスコープになる
+
+色付けに使われるスコープは、スコープリストの一番上のものになります。 @<fn>{meta_scope}
+
+//footnote[meta_scope][@<code>{meta.*}スコープは基本的にスタイルの適用には使われず、ブロックとしてくくるためのスコープ。たとえば@<code>{meta.function}はfunctionブロック全体を指すスコープ、@<code>{meta.var}は変数宣言ステートメント全体を指すスコープ、など]
+
+//table[scope_table][トークンと割り当てられたスコープ]{
+トークン	スコープ	適用されるカラーテーマのルール
 ----------
-comment.line	１行コメント
-constant.numeric.integer	Integer 型の定数
-invalid.illegal	不正な記述
-keyword.control	制御構文
-keyword.operator.arithmetic	算術演算子
-markup.bold	太字
-punctuation.separator	カンマ、コロン
-string.quoted.single	シングルクォート
+var	@<code>{storage.type.js}	@<code>{storage.type}
+foo	@<code>{variable.other.readwrite.js}	@<code>{variable}
+=	@<code>{keyword.operator.assignment.js}	@<code>{keyword.operator}
+1	@<code>{constant.numeric.decimal.js}	@<code>{constant.numeric}
+;	@<code>{punctuation.terminator.statement.js}	@<code>{No_theme_selector}
 //}
 
-//footnote[scope_selectors][スコープセレクタ https://macromates.com/manual/ja/scope_selectors]
-//footnote[scope_naming][Sublime Text Scope Naming https://www.sublimetext.com/docs/3/scope_naming.html]
+スコープが指定されていれば、VSCode は現在有効になっているカラーテーマから適用すべき色を引っ張ってきます。
+
+==={color_theme} カラーテーマから色を適用する
+
+筆者は現在、カラーテーマとして @<code>{Dark+（dark_plus.json）} を使用しています。
+この中に @<code>{storage.type} や @<code>{variable} スコープをキーとして、色の定義がされていますので確認してみましょう。
+デフォルトのカラーテーマは次のパスに存在します。 @<fn>{hukai}
+
+//footnote[hukai][やたら深い]
+
+ * C:\Users\user\AppData\Local\Programs\Microsoft VS Code\resources\app\extensions\theme-defaults\themes
+
+@<code>{dark_plus.json} は外部ファイルを読み込んでおり、
+この中から@<table>{scope_table}に関するスコープを探してみます。
+
+//list[dark_dependency][外部ファイルとの依存関係]{
+dark_defaults.json
+  └ dark_vs.json
+    └ dark_plus.json
+//}
+
+次のような要素が見つかったでしょうか。
+
+//list[dark_string][スコープと色の対応]{
+// dark_plus.json
+{
+  {
+    "name": "Variable and parameter name",
+    "scope": [
+      "variable",
+      "meta.definition.variable.name",
+      "support.variable",
+      "entity.name.variable"
+    ],
+    "settings": {"foreground": "#9CDCFE"}
+  }
+}
+
+// dark_vs.json
+{
+  {
+    "scope": "storage.type",
+    "settings": {"foreground": "#569cd6"}
+  },
+  {
+    "scope": "keyword.operator",
+    "settings": {"foreground": "#d4d4d4"}
+  },
+  {
+    "scope": ["constant.numeric"],
+    "settings": {"foreground": "#b5cea8"}
+  }
+}
+//}
+
+ここで指定された色が、@<img>{inspect_tm_scope} の @<code>{foreground} として色付けに
+使われていることがわかると思います。
+
+このように、適切にトークンに分解し、スコープを割り当てることで、ハイライトを行うことができます。
+スコープは TextMate 文法を使用しており、デフォルトのカラーテーマのスコープはこの規則にしたがっています。
+オリジナルのカラーテーマを作るのでなければ、またオリジナルテーマを作る場合であっても、
+原則この文法で記述していきましょう。 @<fn>{textmate_language_grammars} @<fn>{sublime_scope_naming}
+
+//footnote[textmate_language_grammars][TextMate Language Grammars https://macromates.com/manual/ja/language_grammars]
+//footnote[sublime_scope_naming][Sublime Text Scope Naming https://www.sublimetext.com/docs/3/scope_naming.html]
 
 == ひな形の生成
 
-以降のページで実際にファイルを見ながらやりたいので、
-とりあえずひな形を作ってしまいましょう。
+以降のページでは、実際に開発に関するファイルを見ながら解説していこうと思います。
+Yeoman でひな形を作りましょう。
 
 //cmd{
 $ yo code
@@ -158,13 +225,13 @@ multiple entries (e.g. .ruby, .rb)
 //}
 
 最後にルートスコープ名を聞かれます。 @<fn>{textmate_scopename}
-ルートスコープとは、@<b>{ファイル全体を指すスコープ}です。
+ルートスコープとは、@<b>{テキスト全体を指すスコープ}です。
 
 TextMate のドキュメントによると、記述するものがソースコードであれば @<code>{source.<言語名>}を使用し、
-テキスト文書であれば @<code>{text.<言語名>} とするとのことです。
+文書であれば @<code>{text.<言語名>} とするとのことです。
 今回はソースコードを記述するための言語なので、 @<code>{source.abc} としました。
 
-//footnote[textmate_scopename][TextMate: Language Grammer https://macromates.com/manual/en/language_grammars]
+//footnote[textmate_scopename][TextMate: Language Grammar https://macromates.com/manual/en/language_grammars]
 
 //cmd{
 Enter the root scope name of the grammar (e.g. source.ruby)
@@ -204,12 +271,11 @@ $ code ./abc-lang
 
 =={eg_highlight} ハイライトの例
 
-まず、ハイライトがついていない（定義されていない）場合、
+ハイライトがついていない（定義されていない）場合、
 文字列は白色（ライトテーマの場合は黒）で表されます。
 
 ごく簡単なハイライトであれば、 @<code>{tmLanguage.json} を触るだけで大丈夫なので、
-少し実践してみましょう。
-@<list>{skeleton_tmlang} は @<code>{tmLanguage.json} の基本的な要素になります。
+少し実践してみましょう。@<list>{skeleton_tmlang} は @<code>{tmLanguage.json} の基本的な要素になります。
 
 //list[skeleton_tmlang][tmLanguage.json の基本的な要素]{
 {
@@ -244,79 +310,19 @@ $ code ./abc-lang
 //}
 
 @<code>{repository} 下に @<code>{strings} を定義し、さらにその下に @<code>{patterns} を定義します。
-今回は、「ダブルクォートで囲まれた文字列」をハイライトするにあたり、 @<code>{begin,end} と
+今回は、「"ダブルクォートで囲まれた文字列"」をハイライトするにあたり、 @<code>{begin,end} と
 @<code>{string.quoted.double} スコープとを定義しました。
 
 これは、正規表現で指定された文字列（ @<code>{"\""} ）で開始され、かつ終わる（ @<code>{"\""} ）
 コードの部分に、 @<code>{string.quoted.double.abc} スコープを
 割り当てることを意味します。
-@<code>{string.quoted.double} スコープが割り当てられたため、コードには
-文字列のハイライトが割り当てられます。
+@<code>{string.quoted.double} スコープが割り当てられたため、コードにはカラーテーマで紐づけられた
+@<code>{string} の色が適用されます。@<code>{string} は @<code>{dark_vs.json} に記述されているので探してみてください。
 
 この @<code>{strings} を ルートスコープ @<code>{source.abc} 直下の @<code>{patterns}（以降、ルートパターンと呼びます。） に
 @<code>{include} することで、ハイライトが有効になります。
-
-==== そもそもの色の定義はどこにあるのか
-
-VSCode ではエディタの背景色や文字色を「カラーテーマ」により決められます。
-デフォルトのカラーテーマは次のパスに存在します。 @<fn>{hukai}
-
-//footnote[hukai][やたら深い]
-
- * C:\Users\user\AppData\Local\Programs\Microsoft VS Code\resources\app\extensions\theme-defaults\themes
- ** 筆者は @<code>{Dark+（dark_plus.json）} を適用
-
-@<code>{Dark+} テーマの継承関係（ @<code>{include} で参照されているファイル ） @<fn>{include_theme} は次のようになっており、
-この中から @<code>{string.quoted.double} に関するスコープを探してみます。
-
-//footnote[include_theme][includeは外部JSONファイルの読み込みと説明したほうが正確か]
-
-//list[dark_extend][Dark+の継承関係]{
-dark_defaults.json
-  └ dark_vs.json
-    └ dark_plus.json
-//}
-
-@<code>{dark_plus.json} から順にファイルを見ていくと、@<code>{dark_vs.json} に
-次のように @<code>{string} 関係のスコープが定義されています。
-
-//list[dark_string][stringスコープの定義]{
-{
-  {
-    "scope": "string",
-    "settings": {
-      "foreground": "#ce9178"
-    }
-  },
-  {
-    "scope": "string.tag",
-    "settings": {
-      "foreground": "#ce9178"
-    }
-  },
-  {
-    "scope": "string.value",
-    "settings": {
-      "foreground": "#ce9178"
-    }
-  },
-  {
-    "scope": "string.regexp",
-    "settings": {
-      "foreground": "#d16969"
-    }
-  }
-}
-//}
-
-@<code>{string.quoted.double} も @<code>{string.quoted} も定義されていないので、
-@<code>{string.quoted.double} スコープに適用される色は
-親スコープ @<code>{string} のカラーコード @<code>{#ce9178} となります。
 @<br>{}
 
-ここまで、ハイライトする範囲の設定とスコープの割り当て、そしてカラーコードの適用を見てきました。
-基本はこれらを基に、変数宣言や関数定義、その他さまざまなトークンにマッチするように
-定義していく形になります。
 次節からはもう少し具体的な @<code>{tmLanguage.json} の定義について記述していきますが、
 その前にまだ生成されたファイルの中身を確認していなかったので、順番に見てきましょう。
 
@@ -358,8 +364,8 @@ dark_defaults.json
 }
 //}
 
-@<code>{cotributes} 要素にて、Abc 言語と入力規則（ @<code>{language-configuration} ）及び
-構文定義（ @<code>{abc.tmLanguage} ）との紐づけをしています。
+@<code>{cotributes} 要素にて、Abc 言語と入力規則（ @<code>{language-configuration.json} ）及び
+構文定義（ @<code>{abc.tmLanguage.json} ）との紐づけをしています。
 
 ===={languages} languages 要素
 
@@ -384,11 +390,11 @@ mimetypes	MIME 型 @<fn>{mime_types} の判別。配列で指定
 //footnote[contributes_languages][contributes.languages https://code.visualstudio.com/api/references/contribution-points#contributes.languages]
 //footnote[mime_types][MIME型について https://developer.mozilla.org/ja/docs/Web/HTTP/Basics_of_HTTP/MIME_types]
 
-===={grammers} grammers 要素
+===={grammars} grammars 要素
 
-@<code>{grammers} 要素で、どの言語にどのようなハイライト処理を行うかを指定します。
+@<code>{grammars} 要素で、どの言語にどのようなハイライト処理を行うかを指定します。
 
-//table[grammers_els][grammers 要素]{
+//table[grammars_els][grammars 要素]{
 要素名	解説
 ----------
 language	構文定義を適用する言語 ID
@@ -451,13 +457,13 @@ comments	コメントアウト用のコマンドの定義
 brackets	使用するブラケット記号の定義
 autoClosingPairs	対として自動補完する記号の定義
 surroundingPairs	ドラッグした領域を囲む記号の定義
-autoCloseBefore	autoClosingPairs とあわせて使用
+autoCloseBefore	autoClosingPairs と組み合わせて使用
 folding	言語の折り畳み定義
 wordPattern	プログラミング言語で単語と見なされるものを定義
 indentationRules	エディタが現在の行または次の行のインデントを調整する方法を定義
 //}
 
-@<code>{autoCloseBefore} は少し特殊で、 @<code>{autoClosingPairs} とあわせて使用します。
+@<code>{autoCloseBefore} は少し特殊で、 @<code>{autoClosingPairs} と組み合わせて使用します。
 デフォルトでは、VSCode はカーソルの直後に空白がある場合にのみペアを閉じます。
 したがって、次のコードを入力しても自動クローズは行われません。
 
@@ -483,9 +489,9 @@ const Component = () =>
 次に @<code>{abc.tmLanguage.json} を見てみます。
 
 @<hd>{eg_highlight} でも述べたとおり、 @<code>{repository} にハイライトする部分のパターンを作り、
-ルートスコープ（ @<code>{source.abc} ）の直下の @<code>{patterns}（以後、ルートパターンと呼びます）に @<code>{include} することで
+ルートスコープ（ @<code>{source.abc} ）の直下のルートパターンに @<code>{include} することで
 ハイライトが有効になります。
-パターンは基本的に正規表現で記述し、マッチしたトークンに、指定したスコープのハイライトが付与されます。
+パターンは基本的に正規表現で記述し、マッチしたトークンに、指定したスコープが付与されます。
 
 //list[tmlang_list][abc.tmLanguage.json]{
 {
@@ -535,7 +541,7 @@ const Component = () =>
 //list[strings_flow][エスケープ文字のマッチ]{
 ダブルクォートで囲まれた部分を検知する
 　↓
-マッチした範囲に @<code>{string.quoted.double} スコープを割当て、
+マッチした範囲に @<code>{string.quoted.double} スコープを割り当て、
 さらに @<code>{patterns} にマッチする文字列を検知する
 　↓
 正規表現で「バックスラッシュ＋一文字」があれば、エスケープ文字として検知し
@@ -616,9 +622,7 @@ a( ← 丸カッコ 黄色
 //list[theme_escape][対応するスコープ - dark_plus.json]{
 {
   "scope": "constant.character.escape",
-  "settings": {
-    "foreground": "#d7ba7d"
-  }
+  "settings": {"foreground": "#d7ba7d"}
 }
 //}
 
@@ -639,9 +643,7 @@ a( ← 丸カッコ 黄色
       "begin": "/\\*",
       "end": "\\*/",
       "patterns": [
-        {
-          "include": "#escape-character"
-        }
+        {"include": "#escape-character"}
       ]
     },
     "comments-line": {
@@ -748,25 +750,21 @@ a( ← 丸カッコ 黄色
 var foo: int = 0
 //}
 
-この宣言をトークンに分解すると、次の要素が含まれています。
-ついでに適用するスコープも一緒に記載しました。
+この宣言をトークンに分解すると、次の要素が含まれています。このあと割り当てるスコープも一緒に記載しました。
 
- * var,val … 変数の宣言
- ** @<code>{storage.modifier}
- * foo … 変数名
- ** @<code>{variable.name}
- * int,float,string … 変数の型
- ** @<code>{storage.type}
- * "=" … 演算子
- ** @<code>{keyword.operator.assignment}
- * 0 … 値
- ** @<code>{constant.numeric.integer}
- ** 文字列の場合は @<code>{string} を割り当て
+//table[explode_tokens][トークンと割り当てるスコープ]{
+トークン	スコープ	詳細
+----------
+var,val	@<code>{storage.modifier}	変数宣言
+foo	@<code>{variable.name}	変数名
+int,float,string	@<code>{storage.type}	変数の型
+=	@<code>{keyword.operator.assignment}	代入演算子
+0	@<code>{constant.numeric.integer}	定数値
+//}
 
 ==== スコープの割り当て
 
-それでは実装してみます。
-変数宣言として @<code>{var_declaration} を定義し、
+それでは実装してみます。 @<code>{abc.tmLanguage.json} の @<code>{repository} 以下に @<code>{var_declaration} を定義し、
 次のようにマッチングとスコープを記述しました。
 
 //list[attach_scope][スコープの割り当て]{
@@ -780,7 +778,7 @@ var foo: int = 0
       {"include": "#constants"}
     ],
     "repository": {
-      // 変数の宣言
+      // 変数宣言
       "var": {
         "patterns": [
           {"match": "\\b(var|val)\\b", "name": "storage.type.abc"}
@@ -831,6 +829,7 @@ var foo: int = 0
 @<code>{var_name} では、 @<code>{captures} という要素を使用しています。
 これは、1行前の @<code>{match} にてグループ化した部分にインデックスでスコープを
 設定している形となります。
+巷の正規表現で、グループを取得するときと同じですね。
 
 仕上げに、定義した @<code>{var_declaration} をルートパターンに追加することで完成です。
 このような感じで（といってもモノクロですが）、きれいにハイライトされると思います。
@@ -884,13 +883,13 @@ var foo: int = 0
 === TODO ハイライト定義の注入
 
 さて、最後に @<code>{TODO} のハイライトを定義します。
-ここでは少し視点を変えて、@<b>{既存の構文定義ファイルに独自の定義を注入する方法} @<fn>{injection_grammers} を紹介します。
+ここでは少し視点を変えて、@<b>{既存の構文定義ファイルに独自の定義を注入する方法} @<fn>{injection_grammars} を紹介します。
 
-//footnote[injection_grammers][Syntax Highlight Guide #Injection grammars https://code.visualstudio.com/api/language-extensions/syntax-highlight-guide#injection-grammars]
+//footnote[injection_grammars][Syntax Highlight Guide #Injection grammars https://code.visualstudio.com/api/language-extensions/syntax-highlight-guide#injection-grammars]
 
-==== Injection grammers
+==== Injection grammars
 
-Injection grammers は、既存の構文定義ファイルのスコープに新しく定義を追加する手法です。
+Injection grammars は、既存の構文定義ファイルのスコープに新しく定義を追加する手法です。
 JSON ファイルを独自に記述し、@<code>{package.json} 上で注入するので、
 既存の構文定義を汚さずに独自に拡張させることが可能となります。
 ここでは一行コメントに @<code>{TODO} のハイライトを注入することにより、
@@ -941,7 +940,7 @@ JSON ファイルを独自に記述し、@<code>{package.json} 上で注入す�
 これは、トークンに既存のスコープが適用される前に、 @<code>{keyword.todo} スコープが適用されることを表します。
 
 この @<code>{todo-comment.injection} スコープを、 @<code>{package.json} の
-@<code>{grammers} に次のように記述します。
+@<code>{grammars} に次のように記述します。
 
 //list[injection_package][todo-commentのInjection - package.json]{
 {
