@@ -62,7 +62,7 @@ C:\Program Files\Git\cmd
 
 == Node.js のインストール
 
-@<chap>{feature_vscode} にて述べたとおり、VSCode は Electron フレームワーク上（Node.js + Chromium）で構築されているため、
+VSCode は Electron フレームワーク上（Node.js + Chromium）で構築されているため、
 拡張機能の開発にも Node.js 環境が必要になります。
 
 @<href>{https://nodejs.org/ja/}
@@ -159,7 +159,7 @@ $ yo code
 (Move up and down to reveal more choices)
 //}
 
-矢印（ > ）を @<code>{New Extension (TypeScript)} に合わせて選択すると、次に作成する拡張機能の名前を聞かれます。
+矢印（ > ）を @<code>{New Extension (TypeScript)} に合わせて選択すると、作成する拡張機能の名前を聞かれます。
 @<code>{HelloWorld} と入力してください。
 
 //cmd{
@@ -382,7 +382,7 @@ workspaceContains	指定のパターンにマッチするファイルが含ま�
 onFileSystem	特定のスキームでファイル等が開かれたとき（ftp,ssh等）
 onView	指定のビューが展開されたとき
 onUri	指定のUriで拡張機能が開かれたとき
-onWebviewPanel	指定のViewTypeのWebViewを復元（展開？）するとき
+onWebviewPanel	指定のViewTypeのWebViewを復元（展開）するとき
 "*"	VSCodeが起動したとき
 //}
 

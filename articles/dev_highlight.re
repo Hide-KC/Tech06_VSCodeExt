@@ -83,10 +83,12 @@ foo	@<code>{variable.other.readwrite.js}	@<code>{variable}
 筆者は現在、カラーテーマとして @<code>{Dark+（dark_plus.json）} を使用しています。
 この中に @<code>{storage.type} や @<code>{variable} スコープをキーとして、色の定義がされていますので確認してみましょう。
 デフォルトのカラーテーマは次のパスに存在します。 @<fn>{hukai}
+@<br>{}
 
 //footnote[hukai][やたら深い]
 
- * C:\Users\user\AppData\Local\Programs\Microsoft VS Code\resources\app\extensions\theme-defaults\themes
+@<code>{C:\Users\user\AppData\Local\Programs\Microsoft VS Code\resources\app\extensions\theme-defaults\themes}
+@<br>{}
 
 @<code>{dark_plus.json} は外部ファイルを読み込んでおり、
 この中から@<table>{scope_table}に関するスコープを探してみます。
@@ -528,8 +530,8 @@ const Component = () =>
 
 @<list>{tmlang_list} は Yeoman で生成した初期の状態ですが、すでに２つのパターンが定義されています。
 
- 1. 制御構文（ @<code>{if,while,for,return} ）
- 2. ダブルクォート中のエスケープ（ @<code>{\\.} ）
+ 1. "keywords" - 制御構文（ @<code>{if,while,for,return} ）
+ 2. "strings" - 文字列と文字列中ののエスケープ文字（ @<code>{\\.} ）
 
 @<code>{if,while,for,return} を Abc 言語の制御構文として定義し、既定の @<code>{keyword.control} に応じた
 ハイライトを行います。
@@ -555,7 +557,7 @@ JSON におけるエスケープの記述には少しひねりがあり、バッ
 
 == とりあえずデバッグで確認してみる
 
-さて、主要な３ファイルの中身を簡単に確認してきたので、一度 @<code>{F5} でデバッグを開始してみます。
+さて、主要な３ファイルの中身を確認してきたので、一度 @<code>{F5} でデバッグを開始してみます。
 拡張子を @<code>{.abc} としてファイルを生成し、適当に打ち込んでみてください。
 入力規則に応じて、カッコの自動クローズやインデントが働くと思います。
 ここでは次のようにしてみました。

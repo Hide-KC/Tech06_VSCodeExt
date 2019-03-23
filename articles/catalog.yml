@@ -2,7 +2,6 @@ PREDEF:
   - preface.re
 
 CHAPS:
-  - feature_vscode.re
   - preparation.re
   - dev_command.re
   - dev_highlight.re
