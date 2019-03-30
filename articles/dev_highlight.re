@@ -8,8 +8,6 @@
 
 この章では、ソースコードを記述するための Abc 言語という架空の言語を考え、
 シンタックスハイライト（長いので以下、ハイライト）を開発してみます。
-考えるとは言っても、ごく簡単に @<code>{if/for/while/return} などの制御構文と
-各種カッコ（@<code>{（）,｛｝,［］}）をハイライトするような拡張機能です。
 
 @<chapref>{dev_command} とは異なり、すべて JSON での記述となります。
 また、基本的に VSCode のチュートリアルを参考に進めていきます。 @<fn>{syntax_highlight}
@@ -134,12 +132,11 @@ dark_defaults.json
 //}
 
 ここで指定された色が、@<img>{inspect_tm_scope} の @<code>{foreground} として色付けに
-使われていることがわかると思います。
+使われていることが分かると思います。
 
 このように、適切にトークンに分解し、スコープを割り当てることで、ハイライトを行うことができます。
 スコープは TextMate 文法を使用しており、デフォルトのカラーテーマのスコープはこの規則にしたがっています。
-オリジナルのカラーテーマを作るのでなければ、またオリジナルテーマを作る場合であっても、
-原則この文法で記述していきましょう。 @<fn>{textmate_language_grammars} @<fn>{sublime_scope_naming}
+そのため、原則この文法にしたがって記述していきましょう。 @<fn>{textmate_language_grammars} @<fn>{sublime_scope_naming}
 
 //footnote[textmate_language_grammars][TextMate Language Grammars https://macromates.com/manual/ja/language_grammars]
 //footnote[sublime_scope_naming][Sublime Text Scope Naming https://www.sublimetext.com/docs/3/scope_naming.html]
@@ -197,7 +194,9 @@ Enter キーを押すだけで大丈夫です。
 //}
 
 次にサポートする言語の id を聞かれます。
-Abc 言語なので @<code>{abc} としておきます。
+Abc 言語なので @<code>{abc} としておきます。@<fn>{known_language_ids}
+
+//footnote[known_language_ids][Known language identifiers https://code.visualstudio.com/docs/languages/identifiers]
 
 //cmd{
 Enter the id of the language. The id is an identifier and is single,
@@ -217,7 +216,7 @@ editor mode selector.
 
 次にサポートする拡張子を聞かれます。
 Abc 言語なので @<code>{.abc} としておきます。
-なお拡張子の区別にあたっては Case sensitive なようで、
+なお、拡張子の区別にあたっては Case sensitive なようで、
 後ほど @<code>{package.json} にてエイリアスを設定します。
 
 //cmd{
@@ -233,7 +232,7 @@ TextMate のドキュメントによると、記述するものがソースコ�
 文書であれば @<code>{text.<言語名>} とするとのことです。
 今回はソースコードを記述するための言語なので、 @<code>{source.abc} としました。
 
-//footnote[textmate_scopename][TextMate: Language Grammar https://macromates.com/manual/en/language_grammars]
+//footnote[textmate_scopename][TextMate Language Grammar https://macromates.com/manual/en/language_grammars]
 
 //cmd{
 Enter the root scope name of the grammar (e.g. source.ruby)
@@ -265,68 +264,76 @@ $ code ./abc-lang
  * package.json
  ** おなじみのマニフェストファイル。定義した言語の構文定義、入力規則の紐づけをする
  * abc.tmLanguage.json @<fn>{tm}
- ** @<b>{構文定義ファイル}: if, for やコメント等のハイライトを定義する
+ ** @<b>{構文定義ファイル} : if, for やコメント等のハイライトを定義する
  * language-configuration.json
- ** @<b>{言語の入力規則ファイル}: カッコの自動クローズやインデントの自動増減等、自動補完関係を定義する
+ ** @<b>{言語の入力規則ファイル} : カッコの自動クローズやインデントの自動増減等、自動補完関係を定義する
+
+ 次節から、ファイルの記述を確認していきます。
 
 //footnote[tm][tm は TextMate の意、だそうです]
 
-=={eg_highlight} ハイライトの例
+#@# =={eg_highlight} ハイライトの例
 
-ハイライトがついていない（定義されていない）場合、
-文字列は白色（ライトテーマの場合は黒）で表されます。
+#@# ハイライトがついていない（定義されていない）場合、
+#@# 文字列は白色（ライトテーマの場合は黒）で表されます。
 
-ごく簡単なハイライトであれば、 @<code>{tmLanguage.json} を触るだけで大丈夫なので、
-少し実践してみましょう。@<list>{skeleton_tmlang} は @<code>{tmLanguage.json} の基本的な要素になります。
+#@# ごく簡単なハイライトであれば、 @<code>{tmLanguage.json} を触るだけで大丈夫なので、
+#@# 少し実践してみましょう。@<list>{skeleton_tmlang} は @<code>{tmLanguage.json} の基本的な要素になります。
 
-//list[skeleton_tmlang][tmLanguage.json の基本的な要素]{
-{
-  "scopeName": "source.abc",
-  "$schema": "https://~~~",
-  "name": "Abc",
-  "patterns": [
-    ...
-  ],
-  "repository": {
-    ...
-  }
-}
-//}
+#@# //list[skeleton_tmlang][tmLanguage.json の基本的な要素]{
+#@# {
+#@#   "scopeName": "source.abc",
+#@#   "$schema": "https://~~~",
+#@#   "name": "Abc",
+#@#   "patterns": [
+#@#     ...
+#@#   ],
+#@#   "repository": {
+#@#     ...
+#@#   }
+#@# }
+#@# //}
 
-たとえば、ダブルクォートに囲まれた部分を、ダブルクォートを含めて "文字列" としてハイライトしてみます。
-ハイライトの定義は次のようになります。
+#@# たとえば、ダブルクォートに囲まれた部分を、ダブルクォートを含めて "文字列" としてハイライトしてみます。
+#@# ハイライトの定義は次のようになります。
 
-//list[doublequote_tmlang][文字列ハイライト]{
-{
-  "patterns": [{ "include": "#strings" }]
-  "repository": {
-    "strings": {
-      "patterns": [{
-        "begin": "\"",
-        "end": "\"",
-        "name": "string.quoted.double.abc"
-      }]
-    }
-  }
-}
-//}
+#@# //list[doublequote_tmlang][文字列ハイライト]{
+#@# {
+#@#   "patterns": [{ "include": "#strings" }]
+#@#   "repository": {
+#@#     "strings": {
+#@#       "patterns": [{
+#@#         "begin": "\"",
+#@#         "end": "\"",
+#@#         "name": "string.quoted.double.abc"
+#@#       }]
+#@#     }
+#@#   }
+#@# }
+#@# //}
 
-@<code>{repository} 下に @<code>{strings} を定義し、さらにその下に @<code>{patterns} を定義します。
-今回は、「"ダブルクォートで囲まれた文字列"」をハイライトするにあたり、 @<code>{begin,end} と
-@<code>{string.quoted.double} スコープとを定義しました。
+#@# @<code>{repository} 下に @<code>{strings} を定義し、さらにその下に @<code>{patterns} を定義します。
+#@# 今回は、「"ダブルクォートで囲まれた文字列"」をハイライトするにあたり、 @<code>{begin,end} と
+#@# @<code>{string.quoted.double} スコープとを定義しました。
 
-これは、正規表現で指定された文字列（ @<code>{"\""} ）で開始され、かつ終わる（ @<code>{"\""} ）
-コードの部分に、 @<code>{string.quoted.double.abc} スコープを
-割り当てることを意味します。
-@<code>{string.quoted.double} スコープが割り当てられたため、コードにはカラーテーマで紐づけられた
-@<code>{string} の色が適用されます。@<code>{string} は @<code>{dark_vs.json} に記述されているので探してみてください。
+#@# これは、正規表現で指定された文字列（ @<code>{"\""} ）で開始され、かつ終わる（ @<code>{"\""} ）
+#@# コードの部分に、 @<code>{string.quoted.double.abc} スコープを割り当てることを意味します。
 
-この @<code>{strings} を ルートスコープ @<code>{source.abc} 直下の @<code>{patterns}（以降、ルートパターンと呼びます。） に
-@<code>{include} することで、ハイライトが有効になります。
-@<br>{}
+#@# //list[eg_hoge][スコープの割当て]{
+#@# var foo = "bar";
+#@#           ^^^^^
+#@#   string.quoted.double.abc scope
+#@# //}
 
-次節からはもう少し具体的な @<code>{tmLanguage.json} の定義について記述していきますが、
-その前にまだ生成されたファイルの中身を確認していなかったので、順番に見てきましょう。
+#@# @<code>{string.quoted.double} スコープが割り当てられたため、コードにはカラーテーマで紐づけられた
+#@# @<code>{string} の色が適用されます。@<code>{string} は @<code>{dark_vs.json} に記述されているので探してみてください。
+
+#@# この @<code>{strings} を ルートスコープ @<code>{source.abc} 直下の @<code>{patterns}（以降、ルートパターンと呼びます。） に
+#@# @<code>{include} することで、ハイライトが有効になります。
+#@# @<br>{}
+
+#@# 次節からはもう少し具体的な @<code>{tmLanguage.json} の定義について記述していきますが、
+#@# その前にまだ生成されたファイルの中身を確認していなかったので、順番に見てきましょう。
 
 == package.json
 
@@ -455,7 +462,7 @@ tokenTypes	トークンタイプの指定
 //table[lang_config_els][language-configuration 要素]{
 要素名	解説
 ----------
-comments	コメントアウト用のコマンドの定義
+comments	コメントアウト用の文字の定義
 brackets	使用するブラケット記号の定義
 autoClosingPairs	対として自動補完する記号の定義
 surroundingPairs	ドラッグした領域を囲む記号の定義
@@ -490,9 +497,11 @@ const Component = () =>
 
 次に @<code>{abc.tmLanguage.json} を見てみます。
 
-@<hd>{eg_highlight} でも述べたとおり、 @<code>{repository} にハイライトする部分のパターンを作り、
-ルートスコープ（ @<code>{source.abc} ）の直下のルートパターンに @<code>{include} することで
+@<code>{repository} にハイライトする部分のパターンを作り、
+ルートスコープ（ @<code>{source.abc} ）の直下の @<code>{patterns}（以降、ルートパターンと呼びます。）に @<code>{include} することで
 ハイライトが有効になります。
+多少分かりづらいかもしれませんので、@<hd>{impl_highlight}もあわせてご覧いただければ幸いです。
+
 パターンは基本的に正規表現で記述し、マッチしたトークンに、指定したスコープが付与されます。
 
 //list[tmlang_list][abc.tmLanguage.json]{
@@ -531,13 +540,12 @@ const Component = () =>
 @<list>{tmlang_list} は Yeoman で生成した初期の状態ですが、すでに２つのパターンが定義されています。
 
  1. "keywords" - 制御構文（ @<code>{if,while,for,return} ）
- 2. "strings" - 文字列と文字列中ののエスケープ文字（ @<code>{\\.} ）
+ 2. "strings" - 文字列と文字列中のエスケープ文字（ @<code>{\\.} ）
 
 @<code>{if,while,for,return} を Abc 言語の制御構文として定義し、既定の @<code>{keyword.control} に応じた
 ハイライトを行います。
 
-次に、エスケープを定義した @<code>{strings} ですが、 @<hd>{eg_highlight} で見たときとは違い
-@<code>{patterns} がネストされています。
+次に、エスケープを定義した @<code>{strings} ですが、 @<code>{keywords} とは異なり @<code>{patterns} がネストされています。
 このようなとき、次の流れでマッチを行っています。
 
 //list[strings_flow][エスケープ文字のマッチ]{
@@ -555,7 +563,7 @@ JSON におけるエスケープの記述には少しひねりがあり、バッ
 
 //footnote[escape_char][改行コードなら「\n」を「\」でエスケープしないといけないため、正規表現では「\\\\.」となる https://tools.ietf.org/html/rfc8259]
 
-== とりあえずデバッグで確認してみる
+== デバッグで確認してみる
 
 さて、主要な３ファイルの中身を確認してきたので、一度 @<code>{F5} でデバッグを開始してみます。
 拡張子を @<code>{.abc} としてファイルを生成し、適当に打ち込んでみてください。
@@ -584,13 +592,13 @@ a( ← 丸カッコ 黄色
 )
 //}
 
-筆者は現在 @<code>{"workbench.colorTheme": "Default Dark+"} を VSCode のテーマとして設定しているので、
+筆者は現在 Dark+ (@<code>{dark_plus.json}) を VSCode のテーマとして設定しているので、
 上記のような配色となっていました。
 @<list>{sample_abc} において白とされている部分が、現在ハイライトが定義されていない部分になります。
 
-それでは、次の節から @<list>{sample_abc} を使ってハイライトの定義を行っていきます。
+それでは、次節から @<list>{sample_abc} を使ってハイライトの定義を行っていきます。
 
-== 各種ハイライトの定義
+=={impl_highlight} 各種ハイライトの定義
 
 === エスケープ文字をハイライトする
 
@@ -660,6 +668,19 @@ a( ← 丸カッコ 黄色
     }
   }
 }
+//}
+
+これで、たとえば@<list>{eg_comment}のような行があった場合、スコープが割り振られます。
+
+//list[eg_comment][コメント行]{
+  /* コメント */
+  ^^^^^^^^^^^^^
+  comment.block.abc scope
+
+  var foo = "bar"; // コメント
+                   ^^^^^^^^^^
+          comment.line.double-slash.abc scope
+
 //}
 
 対応するカラーテーマのスコープは次のとおりです。
@@ -898,7 +919,7 @@ JSON ファイルを独自に記述し、@<code>{package.json} 上で注入す�
 どのように実装するか見ていきます。
 
 次の @<list>{comments-line} は、 @<hd>{impl_comments} で定義したものです。
-@<code>{TODO} は @<code>{ダブルスラッシュ + TODO} といった形で定義したいので、
+@<code>{TODO} は「@<code>{ダブルスラッシュ + TODO}」といった形で定義したいので、
 この一行コメントを拡張していきます。
 
 //list[comments-line][一行コメントの定義]{
@@ -938,8 +959,8 @@ JSON ファイルを独自に記述し、@<code>{package.json} 上で注入す�
 //}
 
 注入対象のスコープを @<code>{injectionSelector} に記述します。
-このとき付与した @<code>{L:} は、注入が既存の構文定義の左側に追加されることを意味します。
-これは、トークンに既存のスコープが適用される前に、 @<code>{keyword.todo} スコープが適用されることを表します。
+このとき @<code>{L:} を付与することで、Inspector TM Scope で見たときに
+@<code>{keyword.todo} スコープが一番上に来るようになり、 @<code>{keyword.todo} のカラーテーマが適用されるようになります。
 
 この @<code>{todo-comment.injection} スコープを、 @<code>{package.json} の
 @<code>{grammars} に次のように記述します。
@@ -963,7 +984,7 @@ JSON ファイルを独自に記述し、@<code>{package.json} 上で注入す�
 
  * @<code>{injectTo} … 注入対象のルートスコープを指定
  * @<code>{scopeName} … 注入する独自のスコープを指定
- * @<code>{path} … 独自スコープを記述したファイルパスを指定
+ * @<code>{path} … 注入するスコープを記述したファイルパスを指定
 
 これで、 @<code>{// TODO} と打つと @<code>{TODO} 部分がハイライトされると思います。
 @<code>{tmLanguage.json} に触れることなくハイライトを実装することができました。

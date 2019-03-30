@@ -1,4 +1,4 @@
-={dev_command} コマンド系拡張機能の開発
+={dev_command} コマンド主体の拡張機能の開発
 
 この章では、ごく簡単なコマンドを搭載した拡張機能を開発してみます。
 適宜外部の Node モジュールをインストールして開発を行っていきます。
@@ -7,12 +7,14 @@
 
 VSCode にはコマンドパレットという機能があり、VSCode のほぼすべての機能が
 このコマンドパレットを通じて使用することができます。
-たとえば、コマンドパレットに @<code>{New File} と打ち込むと、
-新しいファイルを生成するためのコマンドが表示されます。
+
+Git 系の拡張機能や HTTP リクエストなど、コマンドを叩くことで動作する拡張機能も多いと思いますが、
+本章ではコマンドパレットに独自のコマンドを定義し、複数のファイル・フォルダを一括で生成する拡張機能及び、
+インデントを一括変換する拡張機能を開発してみます。
 
 == ひな形の生成
 
-拡張機能を作るにあたり、あらかじめひな形を生成しておきましょう。
+開発を行うにあたり、あらかじめひな形を生成しておきましょう。
 @<chap>{preparation} を参考に生成してみてください。
 拡張機能の名称は「GenerateFiles」とします。
 
@@ -26,12 +28,10 @@ $ yo code
 =={gf} ファイル・フォルダセットを生成する
 
 コマンドひとつで、カレントフォルダに定型のファイル群を生成します。
-ファイル群の構成は次のとおりです。 @<code>{root} 以下が生成されるファイルとなります。 @<fn>{workspace}
-
-//footnote[workspace][ワークスペースは、 VSCode の「フォルダーを開く」で開いているフォルダを指します]
+ファイル群の構成は次のとおりです。 @<code>{root} 以下が生成されるファイルとなります。
 
 //list[gf_tree][ファイル構成]{
-ワークスペース（カレントフォルダ）
+カレントフォルダ
   └ root（フォルダ名 YYYYMMDD-HHMMSS）
     ├ images
     └ content.md
@@ -47,13 +47,13 @@ $ yo code
 ターミナルを開き（VSCode で @<code>{Ctrl+@} ）、次のコマンドで @<code>{moment} モジュールをインストールします。
 
 //cmd{
-$ cd node_modules
+$ cd ./node_modules
 $ npm install moment
 //}
 
-インストール完了後、 @<code>{package.json} の @<code>{dependencies} が次のようになっていると思います。
+インストール完了後、 @<code>{package.json} の @<code>{dependencies} が次のようになっていることを確認してください。
 
-//list[gf_dependencies][package.json - dependencies]{
+//list[gf_dependencies][dependencies - package.json]{
 {
   "dependencies": {
     "moment": "^2.24.0"
@@ -63,7 +63,7 @@ $ npm install moment
 
 ==== コマンドの登録
 
-次に、コマンドパレットに表示する @<code>{extension.generatefiles} コマンドを config.yml の @<code>{contributes.commands} に定義します。
+次に、コマンドパレットに表示する @<code>{extension.generatefiles} コマンドを @<code>{package.json} の @<code>{contributes.commands} に定義します。
 
 //list[gf_command][コマンドの定義 - package.json]{
 {
@@ -80,8 +80,8 @@ $ npm install moment
 
 ==== Activation Events の登録
 
-次に、拡張機能を起動させるための Activation Events を定義します。
-@<chap>{preparation} で述べたとおり、Activation Events に定義されたアクションが発生すると、 @<code>{activate} メソッドが読み込まれ
+次に、拡張機能を起動させるための Activation Events を記述します。
+@<chap>{preparation} で述べたとおり、Activation Events に記述されたアクションが発生すると、 @<code>{activate} メソッドが読み込まれ
 拡張機能が起動します。
 
 今回は Generate Files コマンドを叩くことで、拡張機能が起動するようにしてみます。
@@ -174,7 +174,9 @@ const current = workspaces[0].uri.fsPath;
 
 =={indent} インデントを変換する
 
-次はテキストエディタっぽく、インデントを半角４つから２つに変換する拡張機能を作ります。
+次はテキストエディタっぽく、インデントをハードタブと半角スペース２つに相互に変換する拡張機能を作ります。@<fn>{4spaces}
+
+//footnote[4spaces][半角4スペース派「」]
 
  1. 現在アクティブになっているエディタ（画面）を取得する
  2. 全行をスキャンし、インデントを逐次 @<code>{replace} する
@@ -184,15 +186,15 @@ const current = workspaces[0].uri.fsPath;
 ==== コマンドの登録
 
 特段モジュールを @<code>{import} する必要がないため、コマンドの登録から始めます。
-@<code>{4to2} コマンドを定義します。
+@<code>{extension.convertIndent} コマンドを定義します。
 
 //list[indent_command][コマンドの定義 - package.json]{
 {
   "contributes": {
     "commands": [
       {
-        "command": "extension.4to2",
-        "title": "Indent 4 to 2"
+        "command": "extension.convertIndent",
+        "title": "Convert Indent"
       }
     ]
   }
@@ -207,7 +209,7 @@ Activation Events にコマンドを登録します。
 //list[indent_activationevents][Activation Events の定義 - package.json]{
 {
   "activationEvents": [
-    "onCommand:extension.4to2"
+    "onCommand:extension.convertIndent"
   ]
 }
 //}
@@ -221,7 +223,7 @@ Activation Events にコマンドを登録します。
 //listnum[imp_indent][activate メソッドの実装 - extension.ts]{
 export function activate(context: vscode.ExtensionContext) {
   const disposable = vscode.commands.registerTextEditorCommand(
-    'extension.4to2', (textEditor, edit) => {
+    'extension.convertIndent', (textEditor, edit) => {
 
     //ドキュメントオブジェクトと行数を取得
     const document = textEditor.document;
@@ -234,7 +236,7 @@ export function activate(context: vscode.ExtensionContext) {
       edit.replace(
         //lineNum行目の行頭(0)から行末(line.length)を範囲指定
         new vscode.Range(lineNum, 0, lineNum, line.length),
-        convert4To2(line)
+        convertIndent(line)
       );
     }
   });
@@ -243,13 +245,20 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 //正規表現で半角スペースを抽出し置換
-function convert4To2(line: string): string {
-  const _leadSpaces = /^\s*/.exec(line);
-  
-  if (_leadSpaces){
-    const leadSpaces = _leadSpaces[0];
-    const newLeadSpaces = leadSpaces.replace(/[ ]{4}|\t/g, '  ');
-    return newLeadSpaces + line.replace(/^\s+/, '');
+function convertIndent(line: string): string {
+  const _leadIndent = /^\s*/.exec(line);
+
+  if (_leadIndent){
+    const leadIndent = _leadIndent[0];
+    let newLeadIndent: string;
+    if (leadIndent[0] === '\t') {
+      //ハードタブ → 半角スペース２つ
+      newLeadIndent = leadIndent.replace(/\t/g, '  ');
+    } else {
+      //半角スペース２つ → ハードタブ
+      newLeadIndent = leadIndent.replace(/[ ]{2}/g, "\t");
+    }
+    return newLeadIndent + line.replace(/^\s+/, '');
   }
   return line;
 }
@@ -258,10 +267,10 @@ function convert4To2(line: string): string {
 ==== デバッグ実行
 
 @<code>{F5} でデバッグを開始します。
-半角スペース4つでインデントされたテキストファイルを開いてください。
-コマンドパレットを開き（ @<code>{Ctrl+Shift+P} ）、 @<code>{Indent 4 to 2} コマンドを実行します。
+ハードタブまたは半角スペース2つでインデントされたテキストファイルを開いてください。
+コマンドパレットを開き（ @<code>{Ctrl+Shift+P} ）、 Convert Indent コマンドを実行します。
 
-//image[4to2][インデント変換前後][scale=1.0]{
+//image[tab_to_2spaces][インデント変換前後][scale=1.0]{
 //}
 
 == まとめ
@@ -280,7 +289,7 @@ OAuth 認証なども通すことができます（ @<chap>{hatena_oauth} 参照
 #@# \clearpage
 #@# //}
 
-//raw[|latex|\pagebreak]
+#@# //raw[|latex|\pagebreak]
 
 ====[column] コマンドを複数実装する場合
 

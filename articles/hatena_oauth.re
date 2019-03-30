@@ -121,9 +121,11 @@ try {
   // RKMの取得
   const rkm = this.getRKM(requestTokenResult.requestToken, rk);
   
-  //OAuth Verifierの取得
+  // OAuth Verifierの取得
   const verifier =
     this.getVerifier(requestTokenResult.requestToken, rk, (await rkm) as string);
+  
+  // アクセストークンの取得
   const accessTokenResult =
     await getOAuthAccessToken(
       requestTokenResult.requestToken,
@@ -154,7 +156,7 @@ try {
 これがないと、認証ページをリクエストした際に次のようなページが返ってきてしまい、
 処理がややこしくなってしまいます。 @<fn>{touzen_http}
 
-//footnote[touzen_http][画像は例としてウェブページで開いたものです。これらのページの HTML が返ってきます]
+//footnote[touzen_http][画像は例としてChromeで開いたものです。これらのページの HTML が返ってきます]
 
 //image[login_hikaku][ログイン状態で認証ページを開く][scale=0.72]{
 //}
@@ -230,4 +232,4 @@ export function activate(context: vscode.ExtensionContext) {
 
 記事の投稿可能な状態まで拡張機能は作りこんでありますが、
 承認の許可・拒否関係をまるごとすっ飛ばしているのでマーケットプレイスには公開できません。
-完全自己責任案件にはなりますが、もし個人的に利用したいという方がいたらご連絡ください。VSIX ファイルにて配布します。
+完全自己責任案件にはなりますが、万が一個人的に利用したいという方がいたらご連絡ください。VSIX ファイルにて配布します。

@@ -16,7 +16,7 @@
 
 Azure DevOps にサインインしたら、 @<img>{azure_cite} の「無料で始める」をクリックします。
 
-//image[azure_cite][Azure DevOps サイト][scale=0.72]{
+//image[azure_cite][Azure DevOps][scale=0.72]{
 //}
 
 すると最初にプロジェクトの管理画面が表示されます。右上のユーザのアイコンから Security をクリックします。
@@ -52,12 +52,12 @@ Create を押すと、トークンが発行されます。
 拡張機能をオフラインでインストールするときは、 VSIX（@<code>{.vsix}） というファイルが必要になります。 @<fn>{urawaza}
 VSIX は拡張機能をコンパイルしたファイルで、後述の @<code>{vsce} モジュールにより生成します。
 
-//footnote[urawaza][~/user/.vscode/extensions にプロジェクトフォルダをコピペしても一応使えるようにはなるそうです……正常に動くのかはわかりません(´・ω・`)]
+//footnote[urawaza][~/user/.vscode/extensions にプロジェクトフォルダをコピペしても一応使えるようにはなるそうです]
 
 == vsce モジュールのインストール
 
 @<code>{vsce} は Visual Studio Code Extensions を縮めたもので、
-拡張機能のパッケージングやマーケットプレイスへの公開、拡張機能の管理を行う @<code>{npm} モジュールです。
+拡張機能のパッケージングやマーケットプレイスへの公開、拡張機能の管理を行う Node モジュールです。
 次のコマンドでインストールします。
 
 //cmd{
@@ -91,7 +91,7 @@ kcpoipoi
 
 これで発行の準備が整いました。
 
-//footnote[vsce_help][ちなみに @<code>{$ vsce} だけでヘルプが表示されます]
+//footnote[vsce_help][ちなみに @<code>{vsce} だけでヘルプが表示されます]
 
 =={generate_vsix} VSIX ファイルの生成
 
@@ -114,7 +114,7 @@ $ vsce package
 //image[problem][問題][scale=1.0]{
 //}
 
-この状態で @<code>{$　vsce　package} を実行すると、次のエラーでこけてしまいます。
+この状態で @<code>{vsce　package} を実行すると、次のエラーでこけてしまいます。
 
 //cmd{
 ERROR Command failed: npm run vscode:prepublish
@@ -191,7 +191,7 @@ $ code --install-extension helloworld.vsix
 ==== npm install の実行
 
 再起動した VSCode で、 @<code>{HelloWorld} コマンドを実行してみましょう。
-すると、もしかしたら次のようなエラーメッセージが表示されるかもしれません。 @<fn>{you_are_lucky}
+すると、もしかしたら次のようなエラーメッセージが表示されるかもしれません。@<fn>{you_are_lucky}
 
 //footnote[you_are_lucky][普通に実行できればあなたはラッキーです(ﾏﾃ]
 
@@ -199,8 +199,8 @@ $ code --install-extension helloworld.vsix
 //}
 
 原因は、次のように @<code>{tsconfig.json} に記述されており、
-VSIX ファイルに @<code>{node} モジュールが含まれないためです。 @<fn>{module_issue}
-VSIX からのインストール特有の問題のようです。
+VSIX ファイルに @<code>{node} モジュールが含まれないためです。
+VSIX からのインストール特有の問題のようです。@<fn>{module_issue}
 
 //footnote[module_issue][過去にIssue上がっている経緯もある https://github.com/Microsoft/vscode/issues/15837]
 
@@ -254,7 +254,7 @@ $ cd ~/helloworld
 $ vsce publish
 //}
 
-//image[helloworld_published][HelloWorld拡張機能の公開（実際にやってみた）][scale=0.6]{
+//image[helloworld_published][HelloWorld拡張機能の公開（実際にやってみた）][scale=0.72]{
 //}
 
 Unpublish は次のコマンドで実行できます。
