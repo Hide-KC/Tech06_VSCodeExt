@@ -1,7 +1,7 @@
 ={preparation} 拡張機能開発の準備
 
 この章では VSCode 拡張機能の開発環境を整えていきます。
-また、 @<code>{"Hello World!"} という名前の拡張機能を作り、メッセージの出力まで確認してみます。
+また、「Hello World」という拡張機能を作り、メッセージの出力まで確認してみます。
 
 開発に必要なツール等は次のとおりです。
 
@@ -20,7 +20,7 @@ VSCode のインストーラは次の VSCode 公式サイト @<fn>{vscode_url} �
 
 //footnote[vscode_url][Visual Studio Code https://code.visualstudio.com/]
 
-//image[vscode_site][VSCode 公式サイト][scale=0.72]{
+//image[vscode_site][Visual Studio Code][scale=0.72]{
 //}
 
 ボタンを押すと自動的にダウンロードが始まります。
@@ -45,7 +45,7 @@ C:\Users\user\AppData\Local\Programs\Microsoft VS Code\bin
 
 //footnote[gfw_url][Git for Windows https://gitforwindows.org/]
 
-//image[gfw_site][Git for Windows 公式サイト][scale=0.72]{
+//image[gfw_site][Git for Windows][scale=0.72]{
 //}
 
 同様に画面の指示にしたがってインストールします。
@@ -67,7 +67,7 @@ VSCode は Electron フレームワーク上（Node.js + Chromium）で構築さ
 
 //footnote[node_url][Node.jp https://nodejs.org/ja/]
 
-//image[node_site][Node.js 公式サイト][scale=0.72]{
+//image[node_site][Node.js][scale=0.72]{
 //}
 
 同様に指示にしたがってインストールします。お約束のパス確認。
@@ -112,7 +112,7 @@ VSCode 公式サイトでは、拡張機能の開発において簡単にひな�
 Yo は次のコマンドでインストールします。
 また、同時に VSCode 拡張機能のひな形を生成する generator-code モジュールもインストールします。@<fn>{generator_code}
 
-//footnote[generator_code][Yo を使用するにあたって、テンプレートを記述した generator-* という拡張モジュールも必要となります。@<code>{npm search yeoman-generator}で検索もできます（searchは少し時間がかかるので注意）]
+//footnote[generator_code][Yo を使用するにあたって、テンプレートを記述した generator-* という拡張モジュールも必要となります。npm search yeoman-generator で検索もできます（searchは少し時間がかかるので注意）]
 
 //cmd{
 $ npm install -g yo generator-code
@@ -211,14 +211,14 @@ $ yo code
 # ? Initialize a git repository? Yes
 //}
 
-これで最後、パッケージマネージャを @<code>{npm} にするか @<code>{yarn} にするか聞かれます。
+最後に、パッケージマネージャを @<code>{npm} にするか @<code>{yarn} にするか聞かれます。
 お好きな方で構わないと思いますが、とりあえず @<code>{npm} にしておきましょう。
 
 //cmd{
 # ? Which package manager to use? npm
 //}
 
-ズラズラとコードが流れ、最終的にカレントディレクトリに @<code>{helloworld} というフォルダが生成されていると思います。
+ズラズラとコードが走り、最終的にカレントディレクトリに @<code>{helloworld} というフォルダが生成されていると思います。
 次のコマンドで VSCode に展開します。
 
 //cmd{
@@ -410,10 +410,10 @@ onWebviewPanel	指定のViewTypeのWebViewを復元（展開）するとき
 @<code>{registerCommand} で実装します。
 第二引数には、 @<code>{Hello World} コマンドを実行した際の処理を実装します。
 
-@<code>{registerCommand} は @<code>{disposable} なオブジェクトを返しますが、
+@<code>{registerCommand} はコマンド実行を待機するために @<code>{disposable} なオブジェクトを返しますが、
 @<code>{activate} の最後に必ず @<code>{context.subscriptions} に @<code>{push} してください。
 @<code>{context.subscriptions.push} をしておけば、ウィンドウを閉じる等で拡張機能が @<code>{deactivate} されたときに、
-コマンド待機用に確保していたメモリを自動的に解放してくれます。 @<fn>{events} @<fn>{subscriptions}
+イベント待機用に確保していたメモリを自動的に解放してくれます。 @<fn>{events} @<fn>{subscriptions}
 
 //footnote[events][VSCode API #Events https://code.visualstudio.com/api/references/vscode-api#events]
 //footnote[subscriptions][VSCode API #ExtensionContext subscriptions 参照 https://code.visualstudio.com/api/references/vscode-api#ExtensionContext]

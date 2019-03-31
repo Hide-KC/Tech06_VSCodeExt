@@ -9,8 +9,7 @@
 この章では、ソースコードを記述するための Abc 言語という架空の言語を考え、
 シンタックスハイライト（長いので以下、ハイライト）を開発してみます。
 
-@<chapref>{dev_command} とは異なり、すべて JSON での記述となります。
-また、基本的に VSCode のチュートリアルを参考に進めていきます。 @<fn>{syntax_highlight}
+@<chapref>{dev_command} とは異なり、すべて JSON での記述となります。@<fn>{syntax_highlight}
 
 //footnote[syntax_highlight][VSCode Syntax Highlight Guide https://code.visualstudio.com/api/language-extensions/syntax-highlight-guide]
 
@@ -18,7 +17,6 @@
 
 開発の前段階として、そもそもハイライトはどのように行われるのかを考えます。
 @<list>{sample_js}を記述した JavaScript ファイル（ @<code>{sample.js} ）を用意してください。
-このコードを例に説明を行います。
 
 //list[sample_js][変数宣言 - JavaScript]{
 var foo = 1;
@@ -26,7 +24,9 @@ var foo = 1;
 
 ==={token} トークンへの分解
 
-ハイライトを行う場合、コードをひとつひとつの語句に区切った@<b>{トークン}に分解することが必要です。
+普段開発を行っているとき、 @<code>{var} や @<code>{function} を書いた段階で
+色付けが行われるかと思います。
+ハイライトを行う場合、コードをひとつひとつの語句に区切った@<b>{トークン}という単位に分解して考えることが必要です。
 今回は@<list>{sample_js}を次のようなトークンに分解しましょう。
 
 //list[to_tokens][トークンへの分解]{
@@ -35,7 +35,7 @@ var foo = 1;
 変数宣言  変数名  演算子  定数  行末文字
 //}
 
-もちろんこれらの語句の間のスペースもトークンとして扱えますが、今回は無視します。 @<fn>{space_hl}
+もちろんこれらの語句の間のスペースもトークンとして扱えますが、今回はあまり重要ではないため無視します。@<fn>{space_hl}
 さてこれらの各トークンに色を付けるわけですが、VSCode が色を付けるために
 @<b>{スコープ}という目印のようなものを割り当てていきます。
 
@@ -604,9 +604,9 @@ a( ← 丸カッコ 黄色
 
 コメントのハイライトから手を付けたいところですが、
 その前に @<list>{tmlang_list} のエスケープのハイライトを分離しておきます。
-というのも、エスケープはコメント、ダブルクォートで囲まれた文字列、
-シングルクォートで囲まれた文字列など、さまざまなところで使う可能性があるためです。
-さらに、定数を数値と文字列とで分けるなど、できるだけ細かい単位で構文を作っておくと、
+というのも、エスケープはダブルクォート・シングルクォート・バッククォートで囲まれた文字列、
+正規表現のリテラル記法など、数パターンで使う可能性があるためです。
+他にも、定数を数値と文字列とで分けるなど、できるだけ細かい単位で構文を作っておくと、
 @<code>{include} を使って構文の再利用ができるので便利です。
 
 @<code>{tmLanguage.json} の @<code>{repository} に次の要素を追加します。
@@ -632,7 +632,7 @@ a( ← 丸カッコ 黄色
 //list[theme_escape][対応するスコープ - dark_plus.json]{
 {
   "scope": "constant.character.escape",
-  "settings": {"foreground": "#d7ba7d"}
+  "settings": { "foreground": "#d7ba7d" }
 }
 //}
 
@@ -653,7 +653,7 @@ a( ← 丸カッコ 黄色
       "begin": "/\\*",
       "end": "\\*/",
       "patterns": [
-        {"include": "#escape-character"}
+        { "include": "#escape-character" }
       ]
     },
     "comments-line": {
@@ -661,9 +661,7 @@ a( ← 丸カッコ 黄色
       "begin": "//",
       "end": "\n",
       "patterns": [
-        {
-          "include": "#escape-character"
-        }
+        { "include": "#escape-character" }
       ]
     }
   }
@@ -688,9 +686,7 @@ a( ← 丸カッコ 黄色
 //list[theme_comment][対応するスコープ - dark_vs.json]{
 {
   "scope": "comment",
-  "settings": {
-    "foreground": "#6A9955"
-  }
+  "settings": { "foreground": "#6A9955" }
 }
 //}
 
@@ -707,9 +703,7 @@ a( ← 丸カッコ 黄色
       "begin": "\"",
       "end": "\"",
       "patterns": [
-        {
-          "include": "#escape-character"
-        }
+        { "include": "#escape-character" }
       ]
     },
     "strings-single": {
@@ -717,9 +711,7 @@ a( ← 丸カッコ 黄色
       "begin": "'",
       "end": "'",
       "patterns": [
-        {
-          "include": "#escape-character"
-        }
+        { "include": "#escape-character" }
       ]
     }
   }
@@ -757,9 +749,7 @@ a( ← 丸カッコ 黄色
 //list[theme_string][対応するスコープ - dark_plus.json]{
 {
   "scope": "string",
-  "settings": {
-    "foreground": "#ce9178"
-  }
+  "settings": { "foreground": "#ce9178" }
 }
 //}
 
@@ -794,11 +784,11 @@ int,float,string	@<code>{storage.type}	変数の型
 {
   "var_declaration": {
     "patterns": [
-      {"include": "#var"},
-      {"include": "#var_name"},
-      {"include": "#var_type"},
-      {"include": "#assignment"},
-      {"include": "#constants"}
+      { "include": "#var" },
+      { "include": "#var_name" },
+      { "include": "#var_type" },
+      { "include": "#assignment" },
+      { "include": "#constants" }
     ],
     "repository": {
       // 変数宣言
@@ -929,9 +919,7 @@ JSON ファイルを独自に記述し、@<code>{package.json} 上で注入す�
     "begin": "//",
     "end": "\n",
     "patterns": [
-      {
-        "include": "#escape-character"
-      }
+      { "include": "#escape-character" }
     ]
   }
 }
@@ -947,7 +935,7 @@ JSON ファイルを独自に記述し、@<code>{package.json} 上で注入す�
   "scopeName": "todo-comment.injection",
   "injectionSelector": "L:comment.line.double-slash",
   "patterns": [
-    {"include": "#todo-keyword"}
+    { "include": "#todo-keyword" }
   ],
   "repository": {
     "todo-keyword": {

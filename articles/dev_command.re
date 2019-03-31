@@ -44,7 +44,7 @@ $ yo code
 
 ==== moment モジュールのインストール
 
-ターミナルを開き（VSCode で @<code>{Ctrl+@} ）、次のコマンドで @<code>{moment} モジュールをインストールします。
+ターミナルを開き（ @<code>{Ctrl+@} ）、次のコマンドで @<code>{moment} モジュールをインストールします。
 
 //cmd{
 $ cd ./node_modules

@@ -15,7 +15,7 @@
 
 ということで、やってみました。
 
-//footnote[whats_oauth][OAuth認証の認可フローについては各自で調査してください＞＜]
+//footnote[whats_oauth][OAuth 認証の認可フローについては各自で調査してください＞＜]
 //footnote[hatena_dev][Consumer key を取得して OAuth 開発をはじめよう http://developer.hatena.ne.jp/ja/documents/auth/apis/oauth/consumer]
 
 == 拡張機能の要件
@@ -38,7 +38,7 @@
 　↓
 認可ページにリダイレクト
 　↓
-権限取得の承認（@<code>{OAuthVerifier} の取得）
+権限取得の承認（OAuth Verifier の取得）
 　↓
 アクセストークンの取得
 　↓
@@ -69,7 +69,7 @@ request-promise を使用したほうがスッキリすると思います。
 
 === oauth モジュールのメソッドを Promise でラップ
 
-次のメソッドを認証時に利用するので、Promise でラップします。
+次のメソッドを認証時にコールするので、Promise でラップします。
 
  * getOAuthRequestToken - リクエストトークンの取得
  * getOAuthAccessToken - アクセストークンの取得
@@ -97,7 +97,7 @@ const getOAuthAccessToken =
 
 返ってくる Promise の型は、@<code>{oauth} モジュールの @<code>{oauth1tokenCallback} と同じ
 @<code>{{err: {statusCode: number, data?: any\}, requestToken: string, requestTokenSecret: string, query: any\}}
-としました。リスト中では長すぎるので省略しています。
+としました。リスト中では長すぎるので省略しています（@<code>{Promise<{...\}>}の部分）。
 
 Promise のラップって最初はよく分からなかったのですが、 @<code>{then} で記述する匿名関数が
 @<code>{resolve} に置き換わると考えたらなんとなく理解できました（たぶん）。
@@ -223,7 +223,12 @@ export function activate(context: vscode.ExtensionContext) {
 完全に個人的なメモですね←
 
 個人的に詰まったのが「ログイン状態の取得」と「許可動作」です。
-わずかにネット上にヒントがあったので、なんとか実装できました。グーグル先生はすごいぞ。
+わずかにネット上にヒントがあったのでなんとか実装できました。
+グーグル先生はすごいぞ。
+
+また、現在上げているコードでは、認証をシングルトンオブジェクトに担当させ、
+さらに@<code>{oauth}モジュールに依存しきっています。
+@<code>{IAuthorize}等の認証のインターフェースを用意して分離したほうがいいですね。
 
 あと認証には関係ありませんが、Promise、これはやっかいでした。
 非同期処理は Android で経験ありますが、Promise の理解にだいぶ時間をとられてしまいました。
