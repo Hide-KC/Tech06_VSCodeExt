@@ -3,6 +3,8 @@ Gemfile.lock
 *.pdf
 *.epub
 *.psd
+*.zip
 
 articles/*.html
 Issue/
+電子版パスワード.txt
